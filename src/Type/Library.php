@@ -1,22 +1,19 @@
 <?php
 
-namespace Seafile\Type;
+namespace Seafile\Client\Type;
 
 use DateTime;
 
 /**
  * Library type class
  *
- * PHP version 5
- *
- * @category  API
  * @package   Seafile\Type
- * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
- * @copyright 2015 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
+ * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
+ * @copyright 2015-2017 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
  * @license   https://opensource.org/licenses/MIT MIT
  * @link      https://github.com/rene-s/seafile-php-sdk
  */
-class Library extends AbstractType
+class Library extends Type
 {
     /**
      * @var string

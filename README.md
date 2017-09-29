@@ -1,14 +1,16 @@
 # Seafile PHP SDK
 
-This is a PHP package for accessing [Seafile Web API](http://example.com).
+This is a PHP package for accessing [Seafile Web API](https://www.seafile.com/).
 
 ## German Web Application Developer Available for Hire!
 
 No marketing skills whatsoever, but low rates, nearly 20 years of experience, and german work attitude.
 
-Get in touch now: https://www.reneschmidt.de/blog/impressum/
+Get in touch now: https://sdo.sh/DevOps/#contact
 
 [![Build Status](https://api.travis-ci.org/rene-s/Seafile-PHP-SDK.svg)](https://travis-ci.org/rene-s/Seafile-PHP-SDK)
+[![Test Coverage](https://codeclimate.com/github/rene-s/Seafile-PHP-SDK/badges/coverage.svg)](https://codeclimate.com/github/rene-s/Seafile-PHP-SDK/coverage)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## What is Seafile?
 
@@ -25,7 +27,17 @@ It's not advisable yet to use your real server/account if you already got one.
 
 After you have created your test account continue to the next step.
 
+## Roadmap and notes on development
+
+Please note that this SDK currently is under active development and that things might change rather drastically.
+
+If you are looking for stability please refer to stable tags.
+
+The next stable version is planned for January 2018.
+
 ## Obtain API token
+
+Have a look at script ```bin/obtain_api_token.sh``` and use it if you feel comfortable with it. Basically, the script does this:
 
 ```bash
 mkdir ~/.seafile-php-sdk
@@ -36,13 +48,15 @@ Insert your test user name and test user password. Hint: if user name contains a
 
 The file ```~/.seafile-php-sdk/api-token.json``` will look something like this:
 
-```javascript
+```
 {"token": "your_api_token"}
 ```
 
 The example script will assume a config file ```~/.seafile-php-sdk/cfg.json``` that looks like this:
 
-```javascript
+Have a look at script ```bin/create_test_cfg.sh``` and use it if you feel comfortable with it. Basically, the script does this:
+
+```
 {
         "baseUri": "https://your-seafile-server.example.com",
         "testLibId": "test-library-id",
@@ -64,6 +78,7 @@ Next, run the Composer command to install the latest stable version of seafile-p
 
 ```bash
 composer.phar require rsd/seafile-php-sdk
+# composer.phar dump-autoload -o # not required anymore
 ```
 
 After installing, you need to require Composer's autoloader:
@@ -76,7 +91,7 @@ You can then later update seafile-php-sdk using composer:
 
  ```bash
 composer.phar update
-composer.phar dump-autoload -o
+# composer.phar dump-autoload -o # not required anymore
  ```
 
 ## Using Seafile PHP SDK
@@ -126,23 +141,23 @@ foreach ($items as $item) {
 }
 ```
 
-### Check if Directory exists
+### Check if directory item exists
 
 ```php
-$parent_dir = '/'; // Directory must exist within this folder
+$parentDir = '/'; // DirectoryItem must exist within this directory
 $directory = 'DirectoryName';
-if($directoryResource->exists($lib, $directory, $parent_dir) === false) {
- //  directory do not exists
+if($directoryResource->exists($lib, $directoryItemName, $parentDir) === false) {
+ //  directory item does not exist
 }
 ```
-Because Seafile Web API don't provide a function to do this check, the library load all child items of $parent_dir and checks manually.
+Be aware that because Seafile Web API does not provide a function to do this check on its own, all items of the directory will get loaded for iteration. So that's not very efficient.
 
-### Create Directory
+### Create directory
 ```php
-$parent_dir = '/'; // create Directory within this folder
+$parentDir = '/'; // Create directory within this folder
 $directory = 'DirectoryName'; // name of the new Directory
-$recursive = false; // recursive will create parent_dir if not already existing
-$directoryResource->mkdir($lib, $directory, $parent_dir, $recursive);
+$recursive = false; // recursive will create parentDir if not already existing
+$success = $directoryResource->create($lib, $directory, $parentDir, $recursive);
 ```
 
 ### Download file from unencrypted library
@@ -151,7 +166,7 @@ $directoryResource->mkdir($lib, $directory, $parent_dir, $recursive);
 $dir = '/'; // dir in the library
 $saveTo = '/tmp/'. $item->name; // save file to this local path
 $fileResource = new File($client);
-$downloadResponse = $fileResource->download($lib, $item, $saveTo, $dir);
+$downloadResponse = $fileResource->downloadFromDir($lib, $item, $saveTo, $dir);
 ```
 
 ### Download file from encrypted library
@@ -185,6 +200,143 @@ $updatedFileId = json_decode((string)$response->getBody());
 
 ```php
 $directoryItem = $fileResource->getFileDetail($lib, '/' . basename($fullFilePath));
+```
+
+### Get API user account info
+
+```php
+$accountResource = new Account($client);
+
+$accountType = $accountResource->getInfo();
+
+print_r($accountType->toArray());
+```
+
+### Get all accounts
+
+```php
+$accountResource = new Account($client);
+
+$accountTypes = $accountResource->getAll();
+
+foreach ($accountTypes as $accountType) {
+    print_r($accountType->toArray());
+}
+```
+
+### Create account
+
+```php
+$newAccountType = (new AccountType)->fromArray([
+    'email' => 'someone@example.com',
+    'password' => 'password',
+    'name' => 'Hugh Jazz',
+    'note' => 'I will not waste chalk',
+    'institution' => 'Duff Beer Inc.'
+]);
+
+$success = $accountResource->create($newAccountType);
+```
+
+### Update account
+
+```php
+$updateAccountType = (new AccountType)->fromArray([
+    'name' => 'Divine Hugh Jazz',
+    'email' => 'someone@example.com'
+]);
+
+$success = $accountResource->update($updateAccountType);
+```
+
+### Get account info by email address
+
+```php
+$accountResource = new Account($client);
+
+$accountType = $accountResource->getByEmail('someone@example.com');
+
+print_r($accountType->toArray());
+```
+
+### Delete account
+
+```php
+$accountResource = new Account($client);
+
+$accountType = (new AccountType)->fromArray([
+    'email' => 'someone@example.com'
+]);
+
+$success = $accountResource->remove($accountType);
+```
+
+or
+
+```php
+$accountResource = new Account($client);
+
+$success = $accountResource->removeByEmail('someone@example.com');
+```
+
+### Get avatar of an account
+
+```php
+$accountType = (new AccountType)->fromArray([
+   'email' => 'someone@example.com'
+]);
+
+$avatarResource = new Avatar($client);
+
+print_r($avatarResource->getUserAvatar($accountType)->toArray());
+```
+
+or
+
+```php
+print_r($avatarResource->getUserAvatarByEmail('someone@example.com')->toArray());
+```
+
+### Create and remove shared link
+
+```php
+$libraryResource = new Library($client);
+$directoryResource = new Directory($client);
+$fileResource = new File($client);
+$sharedLinkResource = new SharedLink($client);
+
+// create share link for a file
+$expire = 5;
+$shareType = SharedLinkType::SHARE_TYPE_DOWNLOAD;
+$p = "/" . basename($newFilename);
+$password = 'qwertz123';
+
+$shareLinkType = $sharedLinkResource->create($lib, $p, $expire, $shareType, $password);
+
+// remove shared link
+$success = $sharedLinkResource->remove($shareLinkType);
+```
+
+### Get all starred files, star and unstar file
+
+```php
+$libraryResource = new Library($client);
+$starredFileResource = new StarredFile($client);
+
+// get all starred files
+$dirItems = $starredFileResource->getAll();
+
+// unstar all starred files
+foreach ($dirItems as $dirItem) {
+    $lib = $libraryResource->getById($dirItem->repo);
+    $starredFileResource->unstar($lib, $dirItem);
+}
+
+// re-star all files
+foreach ($dirItems as $dirItem) {
+    $lib = $libraryResource->getById($dirItem->repo);
+    $starredFileResource->star($lib, $dirItem);
+}
 ```
 
 ### Debugging and how to enable logging of requests and responses
@@ -221,22 +373,54 @@ $client = new Client(
 
 ## Dependencies
 
-- PHP >=5.5
+- PHP >=5.6.29 64 bits (if you require a backport to an older PHP version [contact me](rene+_gth@sdo.sh) for a quote!)
+- PHP >=7.0 64 bits
 - Guzzle 6
+
+## Seafile Web API V2 Support Matrix
+
+| Resource               | Support grade |
+| ---------------------- | ------------- |
+| Account                | :large_blue_circle::large_blue_circle::large_blue_circle::white_circle: |
+| Starred Files          | :large_blue_circle::large_blue_circle::large_blue_circle::large_blue_circle:          |
+| Group                  | :large_blue_circle::white_circle::white_circle::white_circle:   |
+| File Share Link        | :large_blue_circle::large_blue_circle::white_circle::white_circle:       |
+| Library/Library        | :large_blue_circle::large_blue_circle::white_circle::white_circle:       |
+| Library/File           | :large_blue_circle::large_blue_circle::white_circle::white_circle:       |
+| Library/Directory      | :large_blue_circle::large_blue_circle::white_circle::white_circle:       |
+| Library/Multiple Files | :large_blue_circle::large_blue_circle::large_blue_circle::large_blue_circle:          |
+| Avatar                 | :large_blue_circle::large_blue_circle::large_blue_circle::large_blue_circle:          |
+| Events                 | not planned   |
+| Organization           | not planned   |
+
+## Seafile server compatibility
+
+Tested with:
+
+- ~~Seafile Server 5.1.3 for generic Linux/Debian Jessie~~
+- ~~Seafile Server 5.1.3 for generic Linux/Debian Wheezy~~
+- ~~Seafile Server 5.1.4 for generic Linux/Ubuntu Xenial~~
+- ~~Seafile Server 6.0.3 for generic Linux/Ubuntu Xenial~~
+- Seafile Server 6.0.7 for generic Linux/Ubuntu Xenial
+- If you require a backport for an older Seafile server version [contact me](rene+_gth@sdo.sh) for a quote!
 
 ## Contributing
 
 Please note that this package still is in its infancy. Only a small part of the API has been implemented so far.
 
-Pull requests are welcome.
+**Pull requests are welcome**. Please adhere to some very basic and simple principles:
+
+- Follow "separation of concern" on all levels: 1 issue == 1 pull request. Do not cover multiple issues in a pull request.
+- Unit tests raise the chance of your pull request getting accepted.
+- The same goes for [PHPDoc](https://en.wikipedia.org/wiki/PHPDoc) blocks.
 
 ## Links
 
-- http://seafile.com
+- https://seafile.com
 - https://www.seafile-server.org/ (Seafile server hosting in Germany)
 - http://manual.seafile.com/develop/web_api.html#seafile-web-api-v2
-- https://reneschmidt.de
+- https://sdo.sh
 
 ## License
 
-[MIT](https://raw.githubusercontent.com/rene-s/seafile-php-sdk/master/LICENSE) &copy; 2015 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG
+[MIT](https://raw.githubusercontent.com/rene-s/seafile-php-sdk/master/LICENSE) &copy; 2015-2017 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG

@@ -19,7 +19,7 @@
 /var/bootstrap.php.cache
 !bin/console
 !bin/symfony_requirements
-/vendor/
+vendor/
 
 # Assets and user uploads
 /web/bundles/
@@ -33,5 +33,9 @@
 /build/
 
 # Composer PHAR
-/composer.*
+/composer.lock
 /.idea
+
+# Stuff
+bin/run_tests_*.sh
+internal_requests/

@@ -1,16 +1,13 @@
 <?php
 
-namespace Seafile\Http;
+namespace Seafile\Client\Http;
 
 /**
  * Guzzle wrapper
  *
- * PHP version 5
- *
- * @category  API
  * @package   Seafile\Http
- * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
- * @copyright 2015 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
+ * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
+ * @copyright 2015-2017 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
  * @license   https://opensource.org/licenses/MIT MIT
  * @link      https://github.com/rene-s/seafile-php-sdk
  */
@@ -18,6 +15,7 @@ class Client extends \GuzzleHttp\Client
 {
     /**
      * Constructor
+     *
      * @param array $config Client configuration settings.
      */
     public function __construct(array $config = [])
@@ -28,14 +26,14 @@ class Client extends \GuzzleHttp\Client
 
         $config = array_merge(
             [
-                'http_errors' => true,
+                'http_errors'     => true,
                 'request.options' => [
-                    'verify' => true,
+                    'verify'  => true,
                     'headers' => [
-                        'Content-Type' => 'application/json',
-                        'Authorization' => 'Token none'
-                    ]
-                ]
+                        'Content-Type'  => 'application/json',
+                        'Authorization' => 'Token none',
+                    ],
+                ],
             ],
             $config
         );

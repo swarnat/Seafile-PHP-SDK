@@ -1,41 +1,62 @@
 <?php
 
-namespace Seafile\Tests\Type;
+namespace Seafile\Client\Tests\Type;
 
-use Seafile\Type\DirectoryItem;
-use Seafile\Type\Library;
+use Seafile\Client\Tests\TestCase;
+use Seafile\Client\Type\DirectoryItem;
 
 /**
- * Directory type test
+ * DirectoryItem test
  *
- * PHP version 5
- *
- * @category  API
  * @package   Seafile\Resource
- * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
- * @copyright 2015 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene@reneschmidt.de>
+ * @author    Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
+ * @copyright 2015-2017 Rene Schmidt DevOps UG (haftungsbeschränkt) & Co. KG <rene+_seafile_github@sdo.sh>
  * @license   https://opensource.org/licenses/MIT MIT
  * @link      https://github.com/rene-s/seafile-php-sdk
+ * @covers    \Seafile\Client\Type\DirectoryItem
  */
-class DirectoryItemTest extends \PHPUnit_Framework_TestCase
+class DirectoryItemTest extends TestCase
 {
+
+    /**
+     * DataProvider for testFromArray()
+     *
+     * @return array
+     */
+    public function dataFromArray()
+    {
+        return [
+            // [[expect response code, expected result, password]]
+            [
+                [
+                    'dir'  => true,
+                    'type' => 'dir',
+                ],
+            ],
+            [
+                [
+                    'dir'  => false,
+                    'type' => 'file',
+                ],
+            ],
+        ];
+    }
+
     /**
      * Test fromArray()
      *
+     * @param array $data Dataprovider array
+     *
      * @return void
+     * @dataProvider dataFromArray
      */
-    public function testFromArray()
+    public function testFromArray(array $data)
     {
-        $lib = new DirectoryItem([
-            'id' => 1,
-            'size' => 2,
-            'name' => 'my name',
-            'type' => 'my type'
+        $dirItem = new DirectoryItem([
+            'dir' => $data['dir'],
         ]);
 
-        $this->assertSame(1, $lib->id);
-        $this->assertSame(2, $lib->size);
-        $this->assertSame('my name', $lib->name);
-        $this->assertSame('my type', $lib->type);
+        self::assertSame($data['dir'], $dirItem->dir);
+        self::assertSame($data['type'], $dirItem->type);
     }
 }

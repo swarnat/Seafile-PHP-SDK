@@ -1,15 +1,20 @@
 <?php
 
+/**
+ * Attention: This example script will modify the test library! Do not run this script
+ * unless you are prepared for that.
+ */
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Seafile\Resource\Directory;
-use Seafile\Resource\File;
-use Seafile\Resource\Library;
+use Seafile\Client\Resource\Directory;
+use Seafile\Client\Resource\File;
+use Seafile\Client\Resource\Library;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\MessageFormatter;
 use Monolog\Logger;
-use Seafile\Http\Client;
+use Seafile\Client\Http\Client;
 
 $logger = new Logger('Logger');
 
@@ -46,22 +51,23 @@ if (!is_readable($cfgFile)) {
 }
 
 $token = json_decode(file_get_contents($tokenFile));
-$cfg = json_decode(file_get_contents($cfgFile));
+$cfg   = json_decode(file_get_contents($cfgFile));
 
 $client = new Client(
     [
         'base_uri' => $cfg->baseUri,
-        'debug' => true,
-        'handler' => $stack,
-        'headers' => [
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Token ' . $token->token
-        ]
+        'debug'    => true,
+        'handler'  => $stack,
+        'headers'  => [
+            'Content-Type'  => 'application/json',
+            'Authorization' => 'Token ' . $token->token,
+        ],
     ]
 );
-$libraryResource = new Library($client);
+
+$libraryResource   = new Library($client);
 $directoryResource = new Directory($client);
-$fileResource = new File($client);
+$fileResource      = new File($client);
 
 // get all libraries available
 $logger->log(Logger::INFO, "#################### Getting all libraries");
@@ -109,7 +115,7 @@ if (count($items) > 0) {
     switch ($items[0]->type) {
         case 'file':
             $logger->log(Logger::INFO, "#################### Downloading file '" . $items[0]->name . "' to '" . $saveTo);
-            $downloadResponse = $fileResource->download($lib, $items[0], $saveTo, '/');
+            $downloadResponse = $fileResource->downloadFromDir($lib, $items[0], $saveTo, '/');
             break;
         default:
             $logger->log(Logger::INFO, "#################### Not downloading '" . $items[0]->name . "' because it's not a file.");
@@ -136,5 +142,12 @@ file_put_contents($newFilename, ' - UPDATED!', FILE_APPEND);
 $response = $fileResource->update($lib, $newFilename, '/');
 
 $result = unlink($newFilename);
+
+// Create dir structure
+$logger->log(Logger::INFO, "#################### Recursively create directory structure...");
+$parentDir = '/'; // Create directory within this folder
+$directory = 'a/b/c/d/e/f/g/h/i'; // directory structure
+$recursive = true; // recursive will create parentDir if not already existing
+$success   = $directoryResource->create($lib, $directory, $parentDir, $recursive);
 
 print(PHP_EOL . 'Done' . PHP_EOL);
